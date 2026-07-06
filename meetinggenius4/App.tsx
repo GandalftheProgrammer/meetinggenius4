@@ -249,6 +249,26 @@ const App: React.FC = () => {
     }
   };
 
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch('/.netlify/functions/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: user.uid })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError('Could not open subscription management. Please try again.');
+      }
+    } catch (err) {
+      console.error('Manage subscription failed', err);
+      setError('Could not open subscription management. Please try again.');
+    }
+  };
+
   const handleDisconnectDriveOnly = async () => {
     if (!user) return;
     setIsConnectingDrive(true);
@@ -488,6 +508,7 @@ const App: React.FC = () => {
         onLogin={handleLogin}
         onLogout={handleLogout}
         onUpgrade={handleUpgrade}
+        onManageSubscription={handleManageSubscription}
         currentRecordingSeconds={currentRecordingSeconds}
         isLocked={isGoogleBusy}
       />

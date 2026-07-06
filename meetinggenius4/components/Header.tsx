@@ -14,6 +14,7 @@ interface HeaderProps {
   onLogin: () => void;
   onLogout: () => void;
   onUpgrade: () => void;
+  onManageSubscription: () => void;
   currentRecordingSeconds?: number;
   isLocked?: boolean;
 }
@@ -29,6 +30,7 @@ const Header: React.FC<HeaderProps> = ({
   onLogin,
   onLogout,
   onUpgrade,
+  onManageSubscription,
   currentRecordingSeconds = 0,
   isLocked = false
 }) => {
@@ -62,10 +64,13 @@ const Header: React.FC<HeaderProps> = ({
             {user && (
               <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-full">
                 {user.isPro ? (
-                  <div className="flex items-center gap-1.5 text-blue-700 font-bold text-xs uppercase tracking-wider">
+                  <button
+                    onClick={onManageSubscription}
+                    className="flex items-center gap-1.5 text-blue-700 font-bold text-xs uppercase tracking-wider hover:text-blue-900 transition-colors"
+                  >
                     <Crown className="w-3.5 h-3.5 fill-current" />
                     Pro Plan
-                  </div>
+                  </button>
                 ) : (
                   <div className="flex items-center gap-2 min-w-[140px]">
                     <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden w-16">

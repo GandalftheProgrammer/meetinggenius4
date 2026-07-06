@@ -55,10 +55,31 @@ export default async (req: Request) => {
         profile.isPro = true;
         profile.stripeCustomerId = session.customer;
         await store.setJSON(uid, profile);
+        // Reverse lookup so subscription-cancellation events (which only carry the Stripe customer id) can find this profile.
+        await store.setJSON(`cust_${session.customer}`, { uid });
         console.log(`[Stripe] Successfully upgraded User ${uid} (${profile.email}) to PRO.`);
       } else {
         console.warn(`[Stripe] Session completed but user profile for UID ${uid} not found.`);
       }
+    }
+  }
+
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+    const customerId = subscription.customer;
+
+    const store = getStore({ name: "user-profiles", consistency: "strong" });
+    const link = await store.get(`cust_${customerId}`, { type: "json" }) as any;
+
+    if (link?.uid) {
+      const profile = await store.get(link.uid, { type: "json" }) as any;
+      if (profile) {
+        profile.isPro = false;
+        await store.setJSON(link.uid, profile);
+        console.log(`[Stripe] Downgraded User ${link.uid} (${profile.email}) from PRO.`);
+      }
+    } else {
+      console.warn(`[Stripe] Subscription deleted but no profile mapping found for customer ${customerId}.`);
     }
   }
 
